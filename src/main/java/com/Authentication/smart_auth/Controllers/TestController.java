@@ -11,4 +11,10 @@ public class TestController {
     public String test() {
         return "Successful";
     }
+
+    @GetMapping("/about/info")
+    public String getAbout() {
+        String msg="This is a demo application aimed at learning authentication and AI";
+        return msg;
+    }
 }
