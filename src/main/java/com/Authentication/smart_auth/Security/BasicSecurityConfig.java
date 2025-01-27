@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +26,8 @@ public class BasicSecurityConfig {
 
     @Autowired
     UserDetailsService user_details_service;
+    @Autowired
+    JwtFilterChain filter_chain;
 
 //    public BasicSecurityConfig(UserDetailsService user_details_service) {
 //        this.user_details_service = user_details_service;
@@ -38,12 +41,14 @@ public class BasicSecurityConfig {
                     .requestMatchers("/deny/**").denyAll()
                     .requestMatchers("/users/register").permitAll()
                     .requestMatchers("/users/login").permitAll()
+                    .requestMatchers("/books/post").permitAll()
                     .anyRequest()).authenticated();
         });
         //http.formLogin(Customizer.withDefaults());
         // Disables mandatory CSRF token
         http.csrf(csrf->csrf.disable());
         http.httpBasic(Customizer.withDefaults());
+        http.addFilterBefore(filter_chain, UsernamePasswordAuthenticationFilter.class);
         return (SecurityFilterChain)http.build();
     }
 

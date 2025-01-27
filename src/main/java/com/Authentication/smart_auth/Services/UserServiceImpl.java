@@ -21,6 +21,8 @@ public class UserServiceImpl implements UserService {
     UserRepository user_repo;
     @Autowired
     AuthenticationManager authenticationManager;
+    @Autowired
+    JwtService jwt_service;
 
     @Override
     public User register(String username, String password, String full_name) {
@@ -43,7 +45,7 @@ public class UserServiceImpl implements UserService {
                 new UsernamePasswordAuthenticationToken(username,password)
         );
         if(authentication.isAuthenticated())
-            return "Login successful. Token generated";
+            return jwt_service.generateToken(username);
         else
             return "Authentication failure";
     }
