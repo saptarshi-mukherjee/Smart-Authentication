@@ -14,7 +14,7 @@ public class Book {
     Long id;
     String title, author, category;
     Double price;
-    @ManyToMany
+    @ManyToMany(mappedBy = "books")
     List<User> users=new ArrayList<>();
 
     public Long getId() {

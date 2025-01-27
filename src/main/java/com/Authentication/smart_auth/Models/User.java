@@ -16,7 +16,7 @@ public class User {
     String username;
     String password;
     String full_name;
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany
     List<Book> books=new ArrayList<>();
 
     public Long getId() {
