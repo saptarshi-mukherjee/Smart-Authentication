@@ -2,10 +2,12 @@ package com.Authentication.smart_auth.Services;
 
 import com.Authentication.smart_auth.DTO.UserResponseDto;
 import com.Authentication.smart_auth.Models.Book;
+import com.Authentication.smart_auth.Models.Role;
+import com.Authentication.smart_auth.Models.RoleType;
 import com.Authentication.smart_auth.Models.User;
 import com.Authentication.smart_auth.Repositories.BookRepository;
+import com.Authentication.smart_auth.Repositories.RoleRepository;
 import com.Authentication.smart_auth.Repositories.UserRepository;
-import org.apache.xmlbeans.impl.xb.xsdschema.Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,13 +31,18 @@ public class UserServiceImpl implements UserService {
     JwtService jwt_service;
     @Autowired
     BookRepository book_repo;
+    @Autowired
+    RoleRepository role_repo;
 
     @Override
-    public User register(String username, String password, String full_name) {
+    public User register(String username, String password, String full_name, String roleName) {
         User user=new User();
         user.setUsername(username);
         user.setFull_name(full_name);
         user.setPassword(encoder.encode(password));
+        RoleType type=RoleType.valueOf(roleName);
+        Role role=role_repo.fetchRoleByName(type);
+        user.setRole(role);
         user=user_repo.save(user);
         return user;
     }
@@ -50,9 +57,10 @@ public class UserServiceImpl implements UserService {
         Authentication authentication=authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username,password)
         );
-        if(authentication.isAuthenticated())
-            return jwt_service.generateToken(username);
-        else
+        if(authentication.isAuthenticated()) {
+            Role user_role=user_repo.fetchByUsername(username).getRole();
+            return jwt_service.generateToken(username,List.of(user_role.getRole_type().toString()));
+        }        else
             return "Authentication failure";
     }
 

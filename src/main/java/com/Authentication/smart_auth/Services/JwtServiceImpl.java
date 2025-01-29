@@ -8,25 +8,28 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.function.Function;
+import java.util.List;
 
-
+// The claims object is essentially a hashmap with various keys like, subject, expiration etc
+// along with any custom key that you may have put in.
 @Service
 public class JwtServiceImpl implements JwtService {
 
     private String key=null;
 
     @Override
-    public String generateToken(String username) {
+    public String generateToken(String username, List<String> role_name) {
         HashMap<String,Object> claims=new HashMap<>();
+        claims.put("roles",role_name);   // adding custom key to claims map
         return Jwts
                 .builder()
                 .claims()
                 .add(claims)
                 .subject(username)
-                .issuer("ADMIN")
+                .issuer("ARCHIVIST")
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+(10*60*1000)))
                 .and()
@@ -36,12 +39,23 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String extractUsername(String token) {
-        return extractClaims(token, Claims::getSubject);
+        return extractClaims(token).getSubject();
     }
 
-    private <T> T extractClaims(String token, Function<Claims,T> claim_resolver) {
+    private Claims extractClaims(String token) {
         Claims claims=getClaims(token);
-        return claim_resolver.apply(claims);
+        return  claims;
+    }
+
+    @Override
+    public List<String> extractRole(String token) {
+        List<Object> roles_obj=extractClaims(token).get("roles",List.class);
+        List<String> roles=new ArrayList<>();
+        for(Object obj : roles_obj) {
+            if(obj instanceof String)
+                roles.add((String)obj);
+        }
+        return roles;
     }
 
     private Claims getClaims(String token) {
@@ -66,7 +80,7 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private Date extractExpiration(String token) {
-        return extractClaims(token, Claims::getExpiration);
+        return extractClaims(token).getExpiration();
     }
 
     private SecretKey generateKey() {

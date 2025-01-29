@@ -9,6 +9,7 @@ import com.Authentication.smart_auth.Models.Book;
 import com.Authentication.smart_auth.Models.User;
 import com.Authentication.smart_auth.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -30,9 +31,10 @@ public class UserController {
 
     @PostMapping("/register")
     public User addUser(@RequestBody UserRequestDto user_req) {
-        return user_service.register(user_req.getUsername(),user_req.getPassword(),user_req.getFull_name());
+        return user_service.register(user_req.getUsername(),user_req.getPassword(),user_req.getFull_name(),user_req.getRole_name());
     }
 
+    @Secured("ROLE_ADMIN")
     @GetMapping("/get/all")
     public List<User> allUsers() {
         return user_service.getAllUsers();

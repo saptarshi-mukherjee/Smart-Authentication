@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
@@ -22,6 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true)
 public class BasicSecurityConfig {
 
     @Autowired
@@ -41,7 +43,7 @@ public class BasicSecurityConfig {
                     .requestMatchers("/deny/**").denyAll()
                     .requestMatchers("/users/register").permitAll()
                     .requestMatchers("/users/login").permitAll()
-                    .requestMatchers("/books/post").permitAll()
+                    .requestMatchers("/roles/**").permitAll()
                     .anyRequest()).authenticated();
         });
         //http.formLogin(Customizer.withDefaults());

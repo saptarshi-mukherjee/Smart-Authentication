@@ -16,8 +16,19 @@ public class User {
     String username;
     String password;
     String full_name;
+    @ManyToOne
+    Role role;
     @ManyToMany
     List<Book> books=new ArrayList<>();
+
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
 
     public Long getId() {
         return id;

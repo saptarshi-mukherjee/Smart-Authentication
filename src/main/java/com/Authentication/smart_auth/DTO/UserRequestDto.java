@@ -1,7 +1,15 @@
 package com.Authentication.smart_auth.DTO;
 
 public class UserRequestDto {
-    String username, password, full_name;
+    String username, password, full_name, role_name;
+
+    public String getRole_name() {
+        return role_name;
+    }
+
+    public void setRole_name(String role_name) {
+        this.role_name = role_name;
+    }
 
     public String getUsername() {
         return username;

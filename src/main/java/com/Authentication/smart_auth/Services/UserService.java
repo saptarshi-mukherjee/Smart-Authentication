@@ -7,7 +7,7 @@ import com.Authentication.smart_auth.Models.User;
 import java.util.List;
 
 public interface UserService {
-    public User register(String username, String password, String full_name);
+    public User register(String username, String password, String full_name, String roleName);
     public List<User> getAllUsers();
     public String verify(String username, String password);
     public UserResponseDto getUser(String username);

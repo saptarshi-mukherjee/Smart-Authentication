@@ -8,6 +8,7 @@ import com.Authentication.smart_auth.Models.User;
 import com.Authentication.smart_auth.Services.BookService;
 import org.apache.xmlbeans.impl.xb.xsdschema.Attribute;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class BookController {
     }
 
     @PostMapping("/post")
+    @Secured("ROLE_ADMIN")
     public Book addNewBooks(@RequestBody BookRequestDto book_req) {
         return book_service.addBook(book_req.getTitle(),book_req.getAuthor(),book_req.getCategory(),book_req.getPrice());
     }
