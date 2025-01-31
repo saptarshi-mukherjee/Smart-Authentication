@@ -1,10 +1,13 @@
 package com.Authentication.smart_auth.Security;
 
 
-import org.apache.catalina.filters.CorsFilter;
+//import org.apache.catalina.filters.CorsFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -24,11 +27,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
 public class BasicSecurityConfig  {
+
+    private static final Logger logger = LoggerFactory.getLogger(BasicSecurityConfig.class);
+
 
     @Autowired
     UserDetailsService user_details_service;
@@ -39,20 +48,33 @@ public class BasicSecurityConfig  {
 //        this.user_details_service = user_details_service;
 //    }
 
-    @Bean
-    public CorsConfigurationSource getCors() {
-        CorsConfiguration config=new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:5173");
-        config.addAllowedMethod("GET");
-        config.addAllowedMethod("POST");
-        config.addAllowedMethod("PUT");
-        config.addAllowedMethod("DELETE");
-        config.addAllowedHeader("*");
-        config.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source=new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+//    @Bean
+//    public CorsConfigurationSource getCors() {
+//        logger.debug("Initializing CORS Configuration");
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+//        configuration.setAllowedHeaders(Arrays.asList(
+//                "Authorization",
+//                "Content-Type",
+//                "Accept",
+//                "Origin",
+//                "Access-Control-Request-Method",
+//                "Access-Control-Request-Headers"
+//        ));
+//        configuration.setExposedHeaders(Arrays.asList("Access-Control-Allow-Origin"));
+//        configuration.setAllowCredentials(true);
+//        configuration.setMaxAge(3600L); // 1 hour
+//
+//        logger.debug("CORS Configuration: AllowedOrigins={}, AllowedMethods={}, AllowedHeaders={}",
+//                configuration.getAllowedOrigins(),
+//                configuration.getAllowedMethods(),
+//                configuration.getAllowedHeaders());
+//
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration);
+//        return source;
+//    }
 
 
     @Bean
@@ -69,12 +91,21 @@ public class BasicSecurityConfig  {
         //http.formLogin(Customizer.withDefaults());
 
         // Disables mandatory CSRF token
-        http.cors(cors -> cors.configurationSource(getCors()));
+        //http.cors(cors -> cors.configurationSource(getCors()));
         http.csrf(csrf->csrf.disable());
         http.httpBasic(Customizer.withDefaults());
-        http.addFilterBefore(filter_chain, UsernamePasswordAuthenticationFilter.class);
+        //http.addFilterBefore(getCorsFilter(), UsernamePasswordAuthenticationFilter.class);  // ✅ CORS runs first
+        http.addFilterBefore(filter_chain, UsernamePasswordAuthenticationFilter.class);  // ✅ JWT runs after CORS
+
         return (SecurityFilterChain)http.build();
     }
+
+
+//    @Bean
+//    public CorsFilter getCorsFilter() {
+//        CorsConfigurationSource config_source=getCors();
+//        return new CorsFilter(config_source);
+//    }
 
 //    @Bean
 //    public UserDetailsService userDetailsService() {
