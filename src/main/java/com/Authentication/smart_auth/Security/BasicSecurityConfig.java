@@ -67,7 +67,9 @@ public class BasicSecurityConfig  {
                     .anyRequest()).authenticated();
         });
         //http.formLogin(Customizer.withDefaults());
+
         // Disables mandatory CSRF token
+        http.cors(cors -> cors.configurationSource(getCors()));
         http.csrf(csrf->csrf.disable());
         http.httpBasic(Customizer.withDefaults());
         http.addFilterBefore(filter_chain, UsernamePasswordAuthenticationFilter.class);
