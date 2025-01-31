@@ -1,6 +1,8 @@
 package com.Authentication.smart_auth.Services;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -21,7 +23,7 @@ public class JwtServiceImpl implements JwtService {
     private String key=null;
 
     @Override
-    public String generateToken(String username, List<String> role_name) {
+    public String generateAccessToken(String username, List<String> role_name) {
         HashMap<String,Object> claims=new HashMap<>();
         claims.put("roles",role_name);   // adding custom key to claims map
         return Jwts
@@ -32,6 +34,23 @@ public class JwtServiceImpl implements JwtService {
                 .issuer("ARCHIVIST")
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis()+(10*60*1000)))
+                .and()
+                .signWith(generateKey())
+                .compact();
+    }
+
+    @Override
+    public String generateRefreshToken(String username, List<String> role_name) {
+        HashMap<String,Object> claims=new HashMap<>();
+        claims.put("roles",role_name);   // adding custom key to claims map
+        return Jwts
+                .builder()
+                .claims()
+                .add(claims)
+                .subject(username)
+                .issuer("ARCHIVIST")
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis()+(30*60*1000)))
                 .and()
                 .signWith(generateKey())
                 .compact();
@@ -59,20 +78,24 @@ public class JwtServiceImpl implements JwtService {
     }
 
     private Claims getClaims(String token) {
-        Claims claims=Jwts
-                .parser()
-                .verifyWith(generateKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        Claims claims=null;
+        try {
+            claims = Jwts
+                    .parser()
+                    .verifyWith(generateKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        }
+        catch(ExpiredJwtException e) {
+            claims= e.getClaims();
+        }
         return claims;
     }
 
     @Override
-    public boolean isValidToken(String token, UserDetails user_details) {
-        if(user_details==null)
-            return false;
-        return user_details.getUsername().equals(extractUsername(token)) && isValidDate(token);
+    public boolean isValidToken(String token) {
+        return isValidDate(token);
     }
 
     private boolean isValidDate(String token) {

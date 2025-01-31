@@ -1,10 +1,7 @@
 package com.Authentication.smart_auth.Services;
 
 import com.Authentication.smart_auth.DTO.UserResponseDto;
-import com.Authentication.smart_auth.Models.Book;
-import com.Authentication.smart_auth.Models.Role;
-import com.Authentication.smart_auth.Models.RoleType;
-import com.Authentication.smart_auth.Models.User;
+import com.Authentication.smart_auth.Models.*;
 import com.Authentication.smart_auth.Repositories.BookRepository;
 import com.Authentication.smart_auth.Repositories.RoleRepository;
 import com.Authentication.smart_auth.Repositories.UserRepository;
@@ -33,6 +30,8 @@ public class UserServiceImpl implements UserService {
     BookRepository book_repo;
     @Autowired
     RoleRepository role_repo;
+    @Autowired
+    RefreshTokenService token_service;
 
     @Override
     public User register(String username, String password, String full_name, String roleName) {
@@ -59,7 +58,18 @@ public class UserServiceImpl implements UserService {
         );
         if(authentication.isAuthenticated()) {
             Role user_role=user_repo.fetchByUsername(username).getRole();
-            return jwt_service.generateToken(username,List.of(user_role.getRole_type().toString()));
+            String access_token =  jwt_service.generateAccessToken(username,List.of(user_role.getRole_type().toString()));
+            String refresh_token= jwt_service.generateRefreshToken(username,List.of(user_role.getRole_type().toString()));
+            RefreshToken prev_token=token_service.getRefreshToken(username);
+            if(prev_token!=null) {
+                prev_token.setRefresh_token(refresh_token);
+                token_service.saveRefreshToken(prev_token);
+            }
+            else {
+                RefreshToken new_token=new RefreshToken(username,refresh_token);
+                token_service.saveRefreshToken(new_token);
+            }
+            return access_token;
         }        else
             return "Authentication failure";
     }

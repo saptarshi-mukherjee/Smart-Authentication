@@ -1,0 +1,20 @@
+Login :-
+1. Authenticate the user from username and password.
+2. Generate access token + refresh token.
+3. Invalidate the previous access token while saving the new one against that username.
+4. Return back the access token.
+
+NB: Access tokens have short expiry while refresh tokens have long expiry.
+
+Filter Chain :-
+1. Check if the access token is valid. If yes, allow the request.
+2. If the access token is invalid, extract username from the token.
+3. Search the refresh token against that username.
+4. If refresh token is invalid, force login.
+5. If refresh token is valid, generate new access token + refresh token.
+6. Update the refresh token.
+7. Set the security context from the new access token.
+
+
+Logout :-
+1. The existing refresh token for that user is removed from database.
